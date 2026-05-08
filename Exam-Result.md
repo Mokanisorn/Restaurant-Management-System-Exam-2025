@@ -43,23 +43,7 @@
 ---
 
 ## Test Plan
-1)ขอบเขตการทดสอบ
-    - In-scope ทำการทดสอบฟีเจอร์หลัก เช่น ระบบ Auth, การจัดการเมนู, การรับออเดอร์,การชำระเงินและการรายงาน
-    - Out-of-scope ไม่รวมการทดสอบโหลดในระดับผู้ใช้งานหลักหมื่นคนพร้อมกัน หรือ การทดสอบความเข้ากันได้ของเว็บเบราว์เซอร์เวอร์ชันเก่ามากๆ เนื่องจากเป็นระบบภายในร้านอาหาร
-2)แนวทางการทดสอบ
-    - Unit-testing ใช้ Vitest ทดสอบการทำงานเวอร์ชั่นย่อยใน backend
-    - API testing(End to End) ใช้ Postman และ Newman ในการรัน Intergration Test เพื่อเช็ค Flow การทำงานของ API ทั้งหมด
-3)สภาพแวดล้อมการทดสอบ
-    - Runtime Node.js 22 LTS
-    - Database PostgreSQL 16
-    - Frontend React 18+ Vite
-    - Testing Tools Vitest, Postman, Newman
-4)เงื่อนไขการผ่านและไม่ผ่าน 
-    - Entry Criteria: โค้ดต้องผ่านการ Build สำเร็จและเชื่อมต่อฐานข้อมูล Neon.tech ได้
-    - Exit Criteria: ผลการทดสอบจาก Newman (E2E) ต้องมีอัตราการผ่าน (Pass Rate) ไม่ต่ำกว่า 90% และต้องไม่มีช่องโหว่ความปลอดภัยระดับ High เหลืออยู่ในระบบ
-5)ความเสี่ยงเชิงธุรกิจ
-    - Risk 1 หากระบบ Payment คิดคำนวณเงินพลาดจะทำให้ร้านเสียหายได้และส่งผลต่อความน่าเชื่อถือต่อลูกค้า
-    - Risk 2 หากระบบ Order ล่มขณะร้านเปิดบริการ พนักงานจะไม่สามารถรับออเดอร์ได้ ทำให้การดำเนินงานหยุดชะงัก
+
 
 > **ส่วนที่ 1 — แผนการทดสอบ (4 คะแนน)**
 
@@ -142,20 +126,20 @@
 
 | TC-ID   | Type     | Feature  | Scenario                        | Input                                             | Expected Result          | Actual Result | Pass/Fail |
 |---------|----------|----------|---------------------------------|---------------------------------------------------|--------------------------|---------------|-----------|
-| TC-001  | Positive | Auth     | Login ด้วย credential ถูกต้อง  | `{username: "admin", password: "Admin@123"}`      | HTTP 200 + JWT Token     |               | ⬜        |
-| TC-002  | Positive | Menu     | เพิ่มเมนูใหม่สำเร็จ            | `{name: "ข้าวผัด", price: 60, stock: 100}`        | HTTP 201 + menu object   |               | ⬜        |
-| TC-003  | Positive | Payment  | ชำระเงินและรับเงินทอนถูกต้อง   | `{orderId: 1, amount: 200}`                       | HTTP 200 + change = X    |               | ⬜        |
-| TC-004  | Negative | Auth     | Login ด้วย password ผิด        | `{username: "admin", password: "wrong"}`          | HTTP 401 Unauthorized    |               | ⬜        |
-| TC-005  | Negative | Order    | เพิ่มสินค้าที่หมดสต็อก         | `{menuId: 99, quantity: 999}`                     | HTTP 400 + error message |               | ⬜        |
-| TC-006  | Negative | Payment  | ชำระเงินน้อยกว่ายอดรวม        | `{orderId: 1, amount: 10}`                        | HTTP 400 Insufficient    |               | ⬜        |
-| TC-007  | Security | Auth     | เรียก API โดยไม่มี JWT Token   | GET /api/orders (no header)                       | HTTP 401 Unauthorized    |               | ⬜        |
-| TC-008  | Security | Order    | Cashier เข้าถึง Admin endpoint | Token ของ Cashier + DELETE /api/menu/1            | HTTP 403 Forbidden       |               | ⬜        |
+| TC-001  | Positive | Auth     | Login ด้วย credential ถูกต้อง  | `{username: "admin", password: "Admin@123"}`      | HTTP 200 + JWT Token     |        สามารถ Login เข้าได้          | ⬜        |
+| TC-002  | Positive | Menu     | เพิ่มเมนูใหม่สำเร็จ            | `{name: "ข้าวผัด", price: 60, stock: 100}`        | HTTP 201 + menu object   |        เพิ่มเมนูได้แต่ใส่stockไม่ได้       | ⬜        |
+| TC-003  | Positive | Payment  | ชำระเงินและรับเงินทอนถูกต้อง   | `{orderId: 1, amount: 200}`                       | HTTP 200 + change = X    |       เป็นไปตามกำหนด       | ⬜        |
+| TC-004  | Negative | Auth     | Login ด้วย password ผิด        | `{username: "admin", password: "wrong"}`          | HTTP 401 Unauthorized    |        ไม่สามารถloginได้       | ⬜        |
+| TC-005  | Negative | Order    | เพิ่มสินค้าที่หมดสต็อก         | `{menuId: 99, quantity: 999}`                     | HTTP 400 + error message |        ไม่สามารถเพิ่มได้       | ⬜        |
+| TC-006  | Negative | Payment  | ชำระเงินน้อยกว่ายอดรวม        | `{orderId: 1, amount: 10}`                        | HTTP 400 Insufficient    |       สามารถชำระได้        | ⬜        |
+| TC-007  | Security | Auth     | เรียก API โดยไม่มี JWT Token   | GET /api/orders (no header)                       | HTTP 401 Unauthorized    |      ไม่สามารถเข้าถึงข้อมูลได้         | ⬜        |
+| TC-008  | Security | Order    | Cashier เข้าถึง Admin endpoint | Token ของ Cashier + DELETE /api/menu/1            | HTTP 403 Forbidden       |       ไม่สามารถเข้าถึงได้        | ⬜        |
 | TC-009  | Security | Auth     | SQL Injection ใน Login field   | `{username: "' OR 1=1 --", password: "x"}`        | HTTP 401 (ไม่ผ่าน Login) |               | ⬜        |
-| TC-010  | Edge     | Order    | ออเดอร์ที่ไม่มีสินค้า (0 ชิ้น) | `{tableId: 1, items: []}`                         | HTTP 400 + error message |               | ⬜        |
-| TC-011  | Edge     | Payment  | ชำระเงินพอดียอด (change = 0)   | `{orderId: 1, amount: exactTotal}`                | HTTP 200 + change = 0    |               | ⬜        |
+| TC-010  | Edge     | Order    | ออเดอร์ที่ไม่มีสินค้า (0 ชิ้น) | `{tableId: 1, items: []}`                         | HTTP 400 + error message |       สามารถสั่งซื้อสินค้าได้เนื่องจากไม่มีStockระบุสินค้าโชว์        | ⬜        |
+| TC-011  | Edge     | Payment  | ชำระเงินพอดียอด (change = 0)   | `{orderId: 1, amount: exactTotal}`                | HTTP 200 + change = 0    |       ไม่มีเงินทอนและไม่ขึ้นทอนติดลบ        | ⬜        |
 | <!-- เพิ่มกรณีทดสอบ --> | | | | | | | |
 
-**สรุปผล:** ผ่าน ___ / ___ กรณี (___%)
+**สรุปผล:** ผ่าน 8 / 11 กรณี (72.72%)
 
 ---
 
