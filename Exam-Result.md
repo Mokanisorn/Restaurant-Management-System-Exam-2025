@@ -134,7 +134,7 @@
 | TC-006  | Negative | Payment  | ชำระเงินน้อยกว่ายอดรวม        | `{orderId: 1, amount: 10}`                        | HTTP 400 Insufficient    |       สามารถชำระได้        | ⬜        |
 | TC-007  | Security | Auth     | เรียก API โดยไม่มี JWT Token   | GET /api/orders (no header)                       | HTTP 401 Unauthorized    |      ไม่สามารถเข้าถึงข้อมูลได้         | ⬜        |
 | TC-008  | Security | Order    | Cashier เข้าถึง Admin endpoint | Token ของ Cashier + DELETE /api/menu/1            | HTTP 403 Forbidden       |       ไม่สามารถเข้าถึงได้        | ⬜        |
-| TC-009  | Security | Auth     | SQL Injection ใน Login field   | `{username: "' OR 1=1 --", password: "x"}`        | HTTP 401 (ไม่ผ่าน Login) |               | ⬜        |
+| TC-009  | Security | Auth     | SQL Injection ใน Login field   | `{username: "' OR 1=1 --", password: "x"}`        | HTTP 401 (ไม่ผ่าน Login) |      เข้า Login ไม่ได้         | ⬜        |
 | TC-010  | Edge     | Order    | ออเดอร์ที่ไม่มีสินค้า (0 ชิ้น) | `{tableId: 1, items: []}`                         | HTTP 400 + error message |       สามารถสั่งซื้อสินค้าได้เนื่องจากไม่มีStockระบุสินค้าโชว์        | ⬜        |
 | TC-011  | Edge     | Payment  | ชำระเงินพอดียอด (change = 0)   | `{orderId: 1, amount: exactTotal}`                | HTTP 200 + change = 0    |       ไม่มีเงินทอนและไม่ขึ้นทอนติดลบ        | ⬜        |
 | <!-- เพิ่มกรณีทดสอบ --> | | | | | | | |
@@ -157,21 +157,21 @@ Run Date:   YYYY-MM-DD HH:MM
 │                         │         executed │
 ├─────────────────────────┼──────────────────┤
 │              iterations │                1 │
-│                requests │               ?? │
-│            test-scripts │               ?? │
-│      prerequest-scripts │               ?? │
-│              assertions │               ?? │
+│                requests │               21 │
+│            test-scripts │               21 │
+│      prerequest-scripts │                0 │
+│              assertions │               26 │
 ├─────────────────────────┴──────────────────┤
-│ total run duration:     ???ms              │
-│ total data received:    ???B               │
-│ average response time:  ???ms              │
+│ total run duration:     3.5ms              │
+│ total data received:    1.47kB             │
+│ average response time:  185ms              │
 └────────────────────────────────────────────┘
 ```
 
-**Pass Rate:** _____ / _____ (____%)  
-**Newman Report (HTML):** `./tests/reports/newman-report.html`
+**Pass Rate:** 11 / 26 (42.31%)  
+**Newman Report (HTML):** `https://congenial-system-r4xpwq9v9wpv2prvw-5500.app.github.dev/tests/reports/newman-report.html`
 
-> 📸 วางภาพหน้าจอผลการรัน Newman ที่นี่
+> 📸 วางภาพหน้าจอผลการรัน Newman ที่นี่ ![alt text](image.png)
 
 ---
 
@@ -217,10 +217,10 @@ cd frontend && npm audit --audit-level=moderate
 | Severity | จำนวน |
 |----------|--------|
 | Critical | 0      |
-| High     | 0      |
-| Medium   | 0      |
+| High     | 1      |
+| Medium   | 2      |
 | Low      | 0      |
-| **รวม**  | **0**  |
+| **รวม**  | **3**  |
 
 ---
 
@@ -230,57 +230,58 @@ cd frontend && npm audit --audit-level=moderate
 
 ---
 
-### BUG-001: [ชื่อ Bug สั้น ๆ]
+### BUG-001: [Security Vulnerability in Axios Dependency]
 
-**Severity:** Critical / High / Medium / Low  
-**Priority:** P1 / P2 / P3  
-**Feature:** [Feature ที่มีปัญหา เช่น Payment]  
-**Status:** Open / Fixed
+**Severity:** High
+**Priority:** P1 
+**Feature:** [Frontend Security / API Communication]  
+**Status:** Fixed
 
 #### Steps to Reproduce
-1. ...
-2. ...
-3. ...
+1.เข้าไปที่ไดเรกทอรี frontend/   
+2.รันคำสั่ง npm audit --audit-level=moderate   
+3.ระบบจะแสดงรายงานช่องโหว่ของ axios เวอร์ชัน 1.0.0 - 1.15.1
 
 #### Expected Result
-> [สิ่งที่ควรเกิดขึ้น]
+> [ทั้งหมดต้องไม่มีช่องโหว่ด้านความปลอดภัยในระดับ High หรือ Critical]
 
 #### Actual Result
-> [สิ่งที่เกิดขึ้นจริง]
+> [พบช่องโหว่ Invisible JSON Response Tampering ใน axios ซึ่งอาจทำให้เกิด Prototype Pollution ได้]
 
 #### Evidence
 > 📸 วางภาพหน้าจอที่นี่  
-> `![BUG-001 Screenshot](./tests/reports/bug-001.png)`
+> ![BUG-001 Screenshot](./tests/reports/bug-001.png)
 
 #### Business Impact
-> [ผลกระทบต่อธุรกิจ — เช่น ลูกค้าชำระเงินไม่ได้ ทำให้ร้านเสียรายได้]
+> [ผู้โจมตีอาจปลอมแปลงข้อมูลที่ตอบกลับจาก API หรือทำการ Request Hijacking ทำให้ข้อมูลธุรกิจรั่วไหลหรือระบบถูกควบคุมโดยไม่ได้รับอนุญาต]
 
 ---
 
-### BUG-002: [ชื่อ Bug สั้น ๆ]
+### BUG-002: [Login Error]
 
-**Severity:** Critical / High / Medium / Low  
-**Priority:** P1 / P2 / P3  
-**Feature:** [Feature ที่มีปัญหา]  
-**Status:** Open / Fixed
+**Severity:** Critical
+**Priority:** P1 
+**Feature:** [Payment System]  
+**Status:** Fixed
 
 #### Steps to Reproduce
-1. ...
-2. ...
-3. ...
+1.เข้าสู่ระบบในฐานะ Admin หรือ Cashier   
+2.เปิดโต๊ะและเพิ่มสินค้าลงในออเดอร์   
+3.ไปที่หน้าชำระเงิน (Payment)   
+4..ใส่จำนวนเงินที่จ่าย (Amount Paid) ให้มากกว่ายอดรวม แล้วกดชำระเงิน
 
 #### Expected Result
-> [สิ่งที่ควรเกิดขึ้น]
+> [ระบบต้องคำนวณเงินทอนได้ถูกต้อง (เงินทอน = ยอดจ่าย - ยอดรวม)]
 
 #### Actual Result
-> [สิ่งที่เกิดขึ้นจริง]
+> [ระบบคำนวณเงินทอนผิดพลาด]
 
 #### Evidence
 > 📸 วางภาพหน้าจอที่นี่  
-> `![BUG-002 Screenshot](./tests/reports/bug-002.png)`
+> ![BUG-002 Screenshot](./tests/reports/bug-002.png)
 
 #### Business Impact
-> [ผลกระทบต่อธุรกิจ]
+> [ร้านค้าเสียรายได้จากการทอนเงินผิดพลาด หรือสร้างความไม่พอใจให้กับลูกค้าอย่างมากหากทอนเงินขาด ส่งผลต่อความน่าเชื่อถือของธุรกิจ]
 
 ---
 
@@ -340,11 +341,11 @@ npm run dev
 
 > 📸 **ภาพหน้าจอ Backend Health Check** (`http://localhost:3001/api/health`)
 > 
-> (วางภาพที่นี่)
+> (![alt text](backend.png))
 
 > 📸 **ภาพหน้าจอ Frontend Login สำเร็จ** (`http://localhost:5173`)
 >
-> (วางภาพที่นี่)
+> (![alt text](frontend.png))
 
 ---
 
@@ -376,7 +377,7 @@ docker compose up --build
 
 > 📸 **ภาพหน้าจอ `docker compose ps`** (ทุก Container สถานะ running)
 >
-> (วางภาพที่นี่)
+> (![alt text](docker-compose.png))
 
 ---
 
